@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeliScope — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0E0C16;
+  --bg2:       #151222;
+  --bg3:       #1C1830;
+  --surface:   #1F1B2E;
+  --surface2:  #262240;
+  --border:    #2E2848;
+  --border2:   #3D3660;
+
+  --violet:    #7C5CFF;
+  --violetL:   #9B80FF;
+  --violetD:   #5A3ECC;
+  --violetBg:  rgba(124,92,255,0.08);
+  --violetGlow:rgba(124,92,255,0.15);
+
+  --text:      #F0EDF8;
+  --text2:     #9D97B8;
+  --text3:     #5C5678;
+
+  --green:     #3ECFA8;
+  --greenBg:   rgba(62,207,168,0.08);
+  --red:       #FF6B6B;
+  --redBg:     rgba(255,107,107,0.08);
+  --amber:     #FFB547;
+  --amberBg:   rgba(255,181,71,0.08);
+
+  --radius:    10px;
+  --font:      'DM Sans', sans-serif;
+  --mono:      'DM Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Sidebar ──────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  width: 28px; height: 28px;
+  background: var(--violet);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: #fff;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-size: 15px; font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.logo-text span { color: var(--violet); }
+
+.sidebar-section {
+  padding: 18px 12px 6px;
+}
+.sidebar-section-label {
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text3);
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 13px; font-weight: 400;
+  transition: all 0.15s;
+  margin-bottom: 1px;
+}
+.nav-item:hover { background: var(--surface); color: var(--text); }
+.nav-item.active {
+  background: var(--violetBg);
+  color: var(--violetL);
+  font-weight: 500;
+}
+.nav-item svg { width: 15px; height: 15px; opacity: 0.7; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px; font-weight: 600;
+  background: var(--violet);
+  color: #fff;
+  padding: 1px 6px; border-radius: 20px;
+}
+
+.sidebar-account {
+  margin-top: auto;
+  padding: 14px 12px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 9px;
+}
+.account-avatar {
+  width: 30px; height: 30px;
+  background: var(--surface2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--violetL);
+  flex-shrink: 0;
+}
+.account-info { flex: 1; min-width: 0; }
+.account-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.account-plan { font-size: 10px; color: var(--text3); }
+
+/* ── Main ─────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.topbar {
+  height: 54px; flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+}
+.topbar-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.topbar-sep { width: 1px; height: 16px; background: var(--border2); }
+.topbar-sub { font-size: 12px; color: var(--text3); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--violet); color: #fff; }
+.btn-primary:hover { background: var(--violetL); }
+.btn-ghost { background: var(--surface); color: var(--text2); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── KPI row ──────────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--violet);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.kpi-card:hover::before { opacity: 1; }
+.kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.kpi-value { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; margin-bottom: 5px; }
+.kpi-delta {
+  font-size: 11px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 20px;
+}
+.delta-up { background: var(--greenBg); color: var(--green); }
+.delta-down { background: var(--redBg); color: var(--red); }
+.delta-neutral { background: var(--amberBg); color: var(--amber); }
+
+/* ── Two column layout ────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* ── Panel ────────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.panel-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.panel-sub { font-size: 11px; color: var(--text3); }
+.panel-body { padding: 0; flex: 1; overflow-y: auto; }
+
+/* ── Productos table ──────────────────────────────── */
+.product-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 80px 90px 100px;
+  align-items: center;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  transition: background 0.1s;
+  cursor: pointer;
+}
+.product-row:hover { background: var(--bg3); }
+.product-row:last-child { border-bottom: none; }
+.product-row.header {
+  padding: 8px 18px;
+  background: var(--bg3);
+  cursor: default;
+}
+.product-row.header:hover { background: var(--bg3); }
+.col-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); }
+
+.product-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.product-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-cat { font-size: 10px; color: var(--text3); }
+
+.price-cell { font-size: 13px; font-weight: 500; font-family: var(--mono); color: var(--text); }
+.price-comp { font-size: 11px; font-family: var(--mono); color: var(--text3); }
+
+.rank-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  font-size: 12px; font-weight: 600; font-family: var(--mono);
+}
+.rank-1 { background: var(--violetBg); color: var(--violet); }
+.rank-2 { background: rgba(255,181,71,0.1); color: var(--amber); }
+.rank-3 { background: rgba(255,107,107,0.1); color: var(--red); }
+.rank-other { background: var(--bg3); color: var(--text3); }
+
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  display: inline-block; margin-right: 5px;
+}
+.status-ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.status-alert { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+.status-pill {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 500;
+  padding: 3px 8px; border-radius: 20px;
+}
+.pill-ok { background: var(--greenBg); color: var(--green); }
+.pill-warn { background: var(--amberBg); color: var(--amber); }
+.pill-alert { background: var(--redBg); color: var(--red); }
+
+/* ── Chat panel ───────────────────────────────────── */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 88%;
+}
+.msg-user { align-self: flex-end; align-items: flex-end; }
+.msg-ai { align-self: flex-start; align-items: flex-start; }
+
+.msg-sender { font-size: 10px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.msg-bubble {
+  padding: 9px 13px;
+  border-radius: 10px;
+  font-size: 12px; line-height: 1.55;
+}
+.msg-user .msg-bubble {
+  background: var(--violet);
+  color: #fff;
+  border-bottom-right-radius: 3px;
+}
+.msg-ai .msg-bubble {
+  background: var(--bg3);
+  color: var(--text);
+  border-bottom-left-radius: 3px;
+  border: 1px solid var(--border);
+}
+.msg-ai .msg-bubble strong { color: var(--violetL); font-weight: 600; }
+.msg-ai .msg-bubble .highlight {
+  display: inline-block;
+  background: var(--violetBg);
+  color: var(--violetL);
+  padding: 1px 6px; border-radius: 4px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+}
+
+.chat-input-row {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: center;
+}
+.chat-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 12px; font-family: var(--font);
+  color: var(--text);
+  outline: none;
+}
+.chat-input:focus { border-color: var(--violet); }
+.chat-input::placeholder { color: var(--text3); }
+.send-btn {
+  width: 32px; height: 32px;
+  background: var(--violet);
+  border: none; border-radius: 7px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.send-btn:hover { background: var(--violetL); }
+.send-btn svg { width: 14px; height: 14px; }
+
+/* ── Alerts ───────────────────────────────────────── */
+.alerts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.alert-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.alert-card.urgent { border-color: rgba(255,107,107,0.35); background: rgba(255,107,107,0.04); }
+.alert-card.warning { border-color: rgba(255,181,71,0.35); background: rgba(255,181,71,0.04); }
+.alert-card.info { border-color: rgba(124,92,255,0.3); background: var(--violetBg); }
+
+.alert-top { display: flex; align-items: center; gap: 8px; }
+.alert-icon { font-size: 15px; }
+.alert-type { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.alert-urgent { color: var(--red); }
+.alert-warning { color: var(--amber); }
+.alert-info { color: var(--violetL); }
+.alert-time { margin-left: auto; font-size: 10px; color: var(--text3); }
+.alert-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.alert-body { font-size: 11px; color: var(--text2); line-height: 1.5; }
+.alert-action {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+  color: var(--violetL);
+  cursor: pointer;
+  background: none; border: none; font-family: var(--font);
+  padding: 0;
+}
+
+/* ── Mini chart sparkline ─────────────────────────── */
+.sparkline { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
+.spark-bar {
+  width: 6px; border-radius: 2px 2px 0 0;
+  background: var(--border2);
+  transition: background 0.15s;
+}
+.spark-bar.active { background: var(--violet); }
+.spark-bar:hover { background: var(--violetL); }
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── Animations ───────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card { animation: fadeUp 0.35s ease both; }
+.kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { animation-delay: 0.10s; }
+.kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { animation-delay: 0.20s; }
+
+.alert-card { animation: fadeUp 0.4s ease both; }
+.alert-card:nth-child(1) { animation-delay: 0.08s; }
+.alert-card:nth-child(2) { animation-delay: 0.14s; }
+.alert-card:nth-child(3) { animation-delay: 0.20s; }
+
+/* ── Typing indicator ─────────────────────────────── */
+.typing { display: flex; gap: 4px; padding: 4px 0; }
+.typing span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--text3);
+  animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ── Section title ────────────────────────────────── */
+.section-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text3);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">Meli<span>Scope</span></span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Mis productos
+      <span class="nav-badge">47</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Competidores
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Radar de nichos
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Herramientas</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Optimizer
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Copiloto
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alertas
+      <span class="nav-badge">3</span>
+    </div>
+  </div>
+
+  <div class="sidebar-account">
+    <div class="account-avatar">AR</div>
+    <div class="account-info">
+      <div class="account-name">Alto Rancho</div>
+      <div class="account-plan">Plan Growth</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Dashboard</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-sub">Última actualización hace 4 min</span>
+    <div class="topbar-right">
+      <button class="btn btn-ghost">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Buscar producto
+      </button>
+      <button class="btn btn-primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo monitoreo
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Productos monitoreados</div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-delta delta-up">↑ 5 esta semana</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Posición promedio</div>
+        <div class="kpi-value">#2.3</div>
+        <div class="kpi-delta delta-up">↑ mejoraste 0.4</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Alertas activas</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-delta delta-down">↓ 1 requiere acción</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Listings optimizados</div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-delta delta-neutral">29 por optimizar</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="section-title">Alertas recientes</div>
+    <div class="alerts-row">
+      <div class="alert-card urgent">
+        <div class="alert-top">
+          <span class="alert-icon">🔴</span>
+          <span class="alert-type alert-urgent">Urgente</span>
+          <span class="alert-time">hace 12 min</span>
+        </div>
+        <div class="alert-title">Perdiste la Buy Box — Silla Cesca</div>
+        <div class="alert-body">Tu competidor bajó a $18.100. Bajá a $18.900 para recuperar el #1 manteniendo un margen del 28%.</div>
+        <button class="alert-action">Ver recomendación →</button>
+      </div>
+      <div class="alert-card warning">
+        <div class="alert-top">
+          <span class="alert-icon">🟡</span>
+          <span class="alert-type alert-warning">Oportunidad</span>
+          <span class="alert-time">hace 2 hs</span>
+        </div>
+        <div class="alert-title">Nicho emergente detectado</div>
+        <div class="alert-body">Lámparas mushroom inalámbricas — demanda +34% este mes. Solo 8 vendedores activos con buena reputación.</div>
+        <button class="alert-action">Explorar nicho →</button>
+      </div>
+      <div class="alert-card info">
+        <div class="alert-top">
+          <span class="alert-icon">🟣</span>
+          <span class="alert-type alert-info">Listing</span>
+          <span class="alert-time">hace 5 hs</span>
+        </div>
+        <div class="alert-title">3 listings con score bajo</div>
+        <div class="alert-body">Mesa Ratona Loop, Escritorio Orgánico y Sillón Denver tienen títulos que el algoritmo de Meli penaliza.</div>
+        <button class="alert-action">Optimizar ahora →</button>
+      </div>
+    </div>
+
+    <!-- Main two-col -->
+    <div class="section-title">Productos y copiloto</div>
+    <div class="two-col">
+
+      <!-- Products panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Mis productos</span>
+          <span class="panel-sub">47 publicaciones activas</span>
+        </div>
+        <div class="panel-body">
+          <div class="product-row header">
+            <div class="col-label">Producto</div>
+            <div class="col-label">Mi precio</div>
+            <div class="col-label">Posición</div>
+            <div class="col-label">Competidor</div>
+            <div class="col-label">Estado</div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Silla Cesca Comedor</span>
+              <span class="product-cat">Sillas · Comedor</span>
+            </div>
+            <div>
+              <div class="price-cell">$19.700</div>
+            </div>
+            <div><span class="rank-badge rank-3">4°</span></div>
+            <div>
+              <div class="price-cell">$18.100</div>
+              <div class="price-comp">−$1.600 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-alert"><span class="status-dot status-alert"></span>Perdiste</span></div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Mesa Ratona Loop</span>
+              <span class="product-cat">Mesas · Living</span>
+            </div>
+            <div>
+              <div class="price-cell">$52.000</div>
+            </div>
+            <div><span class="rank-badge rank-1">1°</span></div>
+            <div>
+              <div class="price-cell">$55.500</div>
+              <div class="price-comp">+$3.500 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Lámpara Monolith Negro</span>
+              <span class="product-cat">Iluminación · Diseño</span>
+            </div>
+            <div>
+              <div class="price-cell">$99.990</div>
+            </div>
+            <div><span class="rank-badge rank-2">2°</span></div>
+            <div>
+              <div class="price-cell">$97.000</div>
+              <div class="price-comp">−$2.990 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Escritorio Orgánico</span>
+              <span class="product-cat">Escritorios · Home office</span>
+            </div>
+            <div>
+              <div class="price-cell">$142.000</div>
+            </div>
+            <div><span class="rank-badge rank-1">1°</span></div>
+            <div>
+              <div class="price-cell">$149.000</div>
+              <div class="price-comp">+$7.000 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Sillón Denver Terciopelo</span>
+              <span class="product-cat">Sillones · Living</span>
+            </div>
+            <div>
+              <div class="price-cell">$87.500</div>
+            </div>
+            <div><span class="rank-badge rank-2">3°</span></div>
+            <div>
+              <div class="price-cell">$82.000</div>
+              <div class="price-comp">−$5.500 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div>
+          </div>
+          <div class="product-row">
+            <div class="product-info">
+              <span class="product-name">Set Bazar Verano 3 pzas</span>
+              <span class="product-cat">Bazar · Cocina</span>
+            </div>
+            <div>
+              <div class="price-cell">$24.900</div>
+            </div>
+            <div><span class="rank-badge rank-1">1°</span></div>
+            <div>
+              <div class="price-cell">$26.200</div>
+              <div class="price-comp">+$1.300 vs vos</div>
+            </div>
+            <div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat copilot -->
+      <div class="chat-panel">
+        <div class="panel-header">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+            <span class="panel-title">Copiloto</span>
+          </div>
+          <span class="panel-sub">Con contexto de tu tienda</span>
+        </div>
+        <div class="chat-messages">
+
+          <div class="msg msg-user">
+            <span class="msg-sender">Vos</span>
+            <div class="msg-bubble">¿Qué hago con la Silla Cesca? Perdí posición.</div>
+          </div>
+
+          <div class="msg msg-ai">
+            <span class="msg-sender">MeliScope</span>
+            <div class="msg-bubble">Tu competidor <strong>Mueblerías del Sur</strong> bajó a <span class="highlight">$18.100</span> hace 12 minutos, lo que te bajó del #1 al #4.<br><br>Recomendación: bajá tu precio a <span class="highlight">$18.900</span>. Recuperás el #1 con un margen del <strong>28%</strong> — 3 puntos menos que ahora, pero seguís por arriba de tu umbral mínimo.<br><br>Si no querés bajar, la segunda opción es mejorar las fotos del listing, que hoy tiene score 62/100.</div>
+          </div>
+
+          <div class="msg msg-user">
+            <span class="msg-sender">Vos</span>
+            <div class="msg-bubble">¿Vale la pena entrar con lámparas mushroom?</div>
+          </div>
+
+          <div class="msg msg-ai">
+            <span class="msg-sender">MeliScope</span>
+            <div class="msg-bubble">Sí, es una buena oportunidad ahora. Demanda subió <strong>34%</strong> este mes y hay solo <span class="highlight">8 vendedores</span> con reputación verde activos.<br><br>El precio promedio del top 3 es <strong>$41.500</strong>. Con tu estructura de costos estimada, entrarías con margen de ~32%. Te conviene mostrarte antes de que se sature.</div>
+          </div>
+
+          <div class="msg msg-ai" id="typing-msg" style="display:none">
+            <span class="msg-sender">MeliScope</span>
+            <div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+          </div>
+
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chatInput" placeholder="Preguntá sobre tu catálogo…" />
+          <button class="send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+const responses = {
+  default: "Analizando los datos de tu catálogo en Meli... Dame un segundo.",
+  precio: "Basándome en los movimientos de precio de los últimos 7 días, te recomiendo mantener el precio actual. La demanda de tu categoría está estable y tus competidores no muestran señales de baja agresiva.",
+  competidor: "Detecté <strong>3 competidores nuevos</strong> esta semana en tus categorías. El más relevante es <span class='highlight'>HomeDesign ARG</span> — entró con precios 8% más bajos en sillas, pero tiene reputación nueva. No es una amenaza urgente.",
+  listing: "Tu Mesa Ratona Loop tiene score <span class='highlight'>58/100</span>. El título le falta la keyword 'madera maciza' que aparece en el 80% de los top resultados. ¿Querés que genere un título optimizado ahora?",
+  optimizar: "Generé un nuevo título para tu Mesa Ratona Loop:<br><br><strong>\"Mesa Ratona Loop Madera Maciza Living 60cm — Diseño Escandinavo\"</strong><br><br>Incluye las 3 keywords más buscadas de tu categoría. Copiá y pegá directamente en Meli.",
+};
+
+function getResponse(msg) {
+  const lower = msg.toLowerCase();
+  if (lower.includes('precio') || lower.includes('bajar') || lower.includes('subir')) return responses.precio;
+  if (lower.includes('competidor') || lower.includes('competencia')) return responses.competidor;
+  if (lower.includes('listing') || lower.includes('título') || lower.includes('publicación')) return responses.listing;
+  if (lower.includes('optimizar') || lower.includes('mesa') || lower.includes('mejorar')) return responses.optimizar;
+  return responses.default;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const messages = document.querySelector('.chat-messages');
+  const typingMsg = document.getElementById('typing-msg');
+
+  // Add user message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg msg-user';
+  userDiv.innerHTML = `<span class="msg-sender">Vos</span><div class="msg-bubble">${msg}</div>`;
+  messages.insertBefore(userDiv, typingMsg);
+
+  input.value = '';
+
+  // Show typing
+  typingMsg.style.display = 'flex';
+  messages.scrollTop = messages.scrollHeight;
+
+  setTimeout(() => {
+    typingMsg.style.display = 'none';
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'msg msg-ai';
+    aiDiv.innerHTML = `<span class="msg-sender">MeliScope</span><div class="msg-bubble">${getResponse(msg)}</div>`;
+    messages.insertBefore(aiDiv, typingMsg);
+    messages.scrollTop = messages.scrollHeight;
+  }, 1400);
+}
+
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+</body>
+</html>
