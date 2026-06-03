@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeliScope</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E0C16;--bg2:#151222;--bg3:#1C1830;
+  --surface:#1F1B2E;--surface2:#262240;
+  --border:#2E2848;--border2:#3D3660;
+  --violet:#7C5CFF;--violetL:#9B80FF;--violetD:#5A3ECC;
+  --violetBg:rgba(124,92,255,0.08);--violetBorder:rgba(124,92,255,0.25);
+  --text:#F0EDF8;--text2:#9D97B8;--text3:#5C5678;
+  --green:#3ECFA8;--greenBg:rgba(62,207,168,0.08);
+  --red:#FF6B6B;--redBg:rgba(255,107,107,0.08);
+  --amber:#FFB547;--amberBg:rgba(255,181,71,0.08);
+  --radius:10px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;background:var(--violet);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0}
+.logo-text{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.logo-text span{color:var(--violet)}
+.sidebar-section{padding:16px 10px 4px}
+.sidebar-section-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{background:var(--violetBg);color:var(--violetL);font-weight:500}
+.nav-item svg{width:15px;height:15px;opacity:.7;flex-shrink:0}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:600;background:var(--violet);color:#fff;padding:1px 6px;border-radius:20px}
+.sidebar-account{margin-top:auto;padding:14px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.account-avatar{width:30px;height:30px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--violetL);flex-shrink:0}
+.account-name{font-size:12px;font-weight:500;color:var(--text)}
+.account-plan{font-size:10px;color:var(--text3)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+.topbar{height:54px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-title{font-size:14px;font-weight:500}
+.topbar-sep{width:1px;height:16px;background:var(--border2)}
+.topbar-sub{font-size:12px;color:var(--text3)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:all .15s}
+.btn-primary{background:var(--violet);color:#fff}
+.btn-primary:hover{background:var(--violetL)}
+.btn-ghost{background:var(--surface);color:var(--text2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-outline{background:transparent;color:var(--violetL);border:1px solid var(--violetBorder)}
+.btn-outline:hover{background:var(--violetBg)}
+
+/* PAGES */
+.page{display:none;flex:1;overflow-y:auto;padding:24px;flex-direction:column;gap:20px;animation:fadeIn .2s ease}
+.page.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMPONENTS */
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.kpi-value{font-size:26px;font-weight:600;letter-spacing:-.5px;margin-bottom:5px}
+.kpi-delta{font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px}
+.delta-up{background:var(--greenBg);color:var(--green)}
+.delta-down{background:var(--redBg);color:var(--red)}
+.delta-neutral{background:var(--amberBg);color:var(--amber)}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-title{font-size:13px;font-weight:600;flex:1}
+.panel-sub{font-size:11px;color:var(--text3)}
+.panel-body{flex:1;overflow-y:auto}
+
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+.status-ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+.status-warn{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.status-alert{background:var(--red);box-shadow:0 0 6px var(--red)}
+.status-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px}
+.pill-ok{background:var(--greenBg);color:var(--green)}
+.pill-warn{background:var(--amberBg);color:var(--amber)}
+.pill-alert{background:var(--redBg);color:var(--red)}
+.pill-violet{background:var(--violetBg);color:var(--violetL)}
+
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.rank-1{background:var(--violetBg);color:var(--violet)}
+.rank-2{background:rgba(255,181,71,.1);color:var(--amber)}
+.rank-other{background:var(--bg3);color:var(--text3)}
+
+/* PRODUCT TABLE */
+.product-row{display:grid;grid-template-columns:1fr 90px 80px 90px 100px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--border);gap:12px;cursor:pointer;transition:background .1s}
+.product-row:hover{background:var(--bg3)}
+.product-row:last-child{border-bottom:none}
+.product-row.header{padding:8px 18px;background:var(--bg3);cursor:default}
+.product-row.header:hover{background:var(--bg3)}
+.col-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.product-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-cat{font-size:10px;color:var(--text3)}
+.price-cell{font-size:13px;font-weight:500;font-family:var(--mono)}
+.price-comp{font-size:11px;font-family:var(--mono);color:var(--text3)}
+
+/* ALERTS */
+.alerts-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.alert-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.alert-card.urgent{border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.04)}
+.alert-card.warning{border-color:rgba(255,181,71,.35);background:rgba(255,181,71,.04)}
+.alert-card.info{border-color:var(--violetBorder);background:var(--violetBg)}
+.alert-top{display:flex;align-items:center;gap:8px}
+.alert-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.alert-urgent{color:var(--red)}
+.alert-warning{color:var(--amber)}
+.alert-info{color:var(--violetL)}
+.alert-time{margin-left:auto;font-size:10px;color:var(--text3)}
+.alert-title{font-size:12px;font-weight:600;line-height:1.35}
+.alert-body{font-size:11px;color:var(--text2);line-height:1.5}
+.alert-action{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:var(--violetL);cursor:pointer;background:none;border:none;font-family:var(--font);padding:0}
+
+/* CHAT */
+.chat-panel{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:100%}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;flex-direction:column;gap:4px;max-width:88%}
+.msg-user{align-self:flex-end;align-items:flex-end}
+.msg-ai{align-self:flex-start;align-items:flex-start}
+.msg-sender{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.msg-bubble{padding:9px 13px;border-radius:10px;font-size:12px;line-height:1.55}
+.msg-user .msg-bubble{background:var(--violet);color:#fff;border-bottom-right-radius:3px}
+.msg-ai .msg-bubble{background:var(--bg3);color:var(--text);border-bottom-left-radius:3px;border:1px solid var(--border)}
+.msg-ai .msg-bubble strong{color:var(--violetL);font-weight:600}
+.msg-ai .msg-bubble .hl{display:inline-block;background:var(--violetBg);color:var(--violetL);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:500}
+.chat-input-row{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;font-size:12px;font-family:var(--font);color:var(--text);outline:none}
+.chat-input:focus{border-color:var(--violet)}
+.chat-input::placeholder{color:var(--text3)}
+.send-btn{width:32px;height:32px;background:var(--violet);border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.send-btn:hover{background:var(--violetL)}
+.typing{display:flex;gap:4px;padding:4px 0}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 360px;gap:16px}
+
+/* ── OPTIMIZER ── */
+.optimizer-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.listing-select{display:flex;flex-direction:column;gap:8px}
+.listing-item{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s}
+.listing-item:hover{border-color:var(--border2);background:var(--bg3)}
+.listing-item.selected{border-color:var(--violet);background:var(--violetBg)}
+.listing-item-name{font-size:12px;font-weight:500;margin-bottom:3px}
+.listing-item-meta{display:flex;gap:8px;align-items:center}
+.score-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;flex:1;overflow:hidden}
+.score-bar{height:100%;border-radius:2px;transition:width .6s ease}
+.score-low{background:var(--red)}
+.score-mid{background:var(--amber)}
+.score-high{background:var(--green)}
+
+.optimizer-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:16px}
+.opt-field{display:flex;flex-direction:column;gap:6px}
+.opt-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)}
+.opt-before{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.5;position:relative}
+.opt-after{background:var(--violetBg);border:1px solid var(--violetBorder);border-radius:7px;padding:10px 12px;font-size:12px;color:var(--text);line-height:1.5}
+.opt-badge{display:inline-block;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.badge-before{background:var(--redBg);color:var(--red)}
+.badge-after{background:var(--greenBg);color:var(--green)}
+.score-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0}
+.score-circle.low{background:var(--redBg);border:2px solid var(--red)}
+.score-circle.mid{background:var(--amberBg);border:2px solid var(--amber)}
+.score-circle.high{background:var(--greenBg);border:2px solid var(--green)}
+.score-num{font-size:16px;font-weight:700;font-family:var(--mono)}
+.score-num.low{color:var(--red)}
+.score-num.mid{color:var(--amber)}
+.score-num.high{color:var(--green)}
+.score-lbl{font-size:8px;color:var(--text3)}
+
+/* ── RADAR ── */
+.radar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.niche-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.niche-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.niche-card.hot{border-color:var(--violetBorder)}
+.niche-card.hot::before{content:'🔥 TRENDING';position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;color:var(--violet);background:var(--violetBg);padding:2px 8px;border-radius:20px;letter-spacing:.05em}
+.niche-name{font-size:13px;font-weight:600;margin-bottom:4px;padding-right:80px}
+.niche-cat{font-size:10px;color:var(--text3);margin-bottom:12px}
+.niche-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.niche-stat{background:var(--bg3);border-radius:6px;padding:8px 10px}
+.niche-stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:3px}
+.niche-stat-val{font-size:14px;font-weight:600;font-family:var(--mono)}
+.niche-stat-val.up{color:var(--green)}
+.niche-stat-val.warn{color:var(--amber)}
+.niche-rec{font-size:11px;color:var(--text2);line-height:1.45;border-top:1px solid var(--border);padding-top:10px;margin-top:2px}
+.niche-rec strong{color:var(--violetL)}
+.demand-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:8px;overflow:hidden}
+.demand-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--violet),var(--violetL))}
+
+/* ── COPILOTO FULL ── */
+.copiloto-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;flex:1;min-height:0}
+.context-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.context-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)}
+.context-item{display:flex;flex-direction:column;gap:4px;padding:10px;background:var(--bg3);border-radius:7px;border:1px solid var(--border)}
+.context-item-label{font-size:10px;color:var(--text3)}
+.context-item-val{font-size:12px;font-weight:500;color:var(--text)}
+.context-item-sub{font-size:10px;color:var(--text2)}
+.suggested-q{padding:8px 10px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s}
+.suggested-q:hover{background:var(--violetBg);color:var(--violetL);border-color:var(--violetBorder)}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding:0 4px env(safe-area-inset-bottom,0)}
+.mobile-nav-inner{display:flex;align-items:stretch;height:56px}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;transition:color .15s;padding:6px 2px;border:none;background:none;font-family:var(--font)}
+.mob-nav-item svg{width:18px;height:18px}
+.mob-nav-item.active{color:var(--violetL)}
+.mob-badge{position:absolute;top:-2px;right:-4px;width:14px;height:14px;background:var(--violet);border-radius:50%;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center}
+.mob-nav-icon{position:relative;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:768px){
+  body{overflow:auto;flex-direction:column;height:auto;min-height:100vh}
+  .sidebar{display:none}
+  .mobile-nav{display:flex}
+  .main{height:auto;min-height:100vh;overflow:visible}
+  .topbar{padding:0 16px;height:50px}
+  .topbar-sep,.topbar-sub{display:none}
+  .topbar-right .btn-ghost{display:none}
+  .btn-primary{padding:6px 12px;font-size:11px}
+  .page{padding:16px 14px 72px;overflow:visible;height:auto}
+  .page.active{display:flex}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi-value{font-size:22px}
+  .alerts-row{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+  .chat-panel{height:460px}
+  .product-row{grid-template-columns:1fr auto;gap:8px;padding:10px 14px}
+  .product-row > div:nth-child(2),
+  .product-row > div:nth-child(3),
+  .product-row > div:nth-child(4){display:none}
+  .product-row.header{display:none}
+  .optimizer-grid{grid-template-columns:1fr}
+  .radar-grid{grid-template-columns:1fr}
+  .copiloto-layout{grid-template-columns:1fr;height:auto}
+  .context-panel{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:visible}
+  .context-title{grid-column:1/-1;margin-top:8px}
+  .context-title:first-child{margin-top:0}
+  .suggested-q{display:none}
+  .chat-panel{height:480px}
+  .section-title{font-size:10px}
+  .panel-header{padding:12px 14px}
+  .panel-sub{display:none}
+  .niche-card.hot::before{font-size:8px;padding:2px 6px}
+  .score-circle{width:44px;height:44px}
+  .score-num{font-size:14px}
+}
+@media(max-width:400px){
+  .kpi-card{padding:12px 14px}
+  .kpi-value{font-size:20px}
+  .kpi-label{font-size:10px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">Meli<span>Scope</span></span>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="nav('productos',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Mis productos
+      <span class="nav-badge">47</span>
+    </div>
+    <div class="nav-item" onclick="nav('radar',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Radar de nichos
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Herramientas</div>
+    <div class="nav-item" onclick="nav('optimizer',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Optimizer
+    </div>
+    <div class="nav-item" onclick="nav('copiloto',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Copiloto
+    </div>
+    <div class="nav-item" onclick="nav('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alertas
+      <span class="nav-badge">3</span>
+    </div>
+  </div>
+  <div class="sidebar-account">
+    <div class="account-avatar">AR</div>
+    <div style="flex:1;min-width:0">
+      <div class="account-name">Alto Rancho</div>
+      <div class="account-plan">Plan Growth</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-sub">Última actualización hace 4 min</span>
+    <div class="topbar-right">
+      <button class="btn btn-ghost">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Buscar
+      </button>
+      <button class="btn btn-primary" id="topbar-cta">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo monitoreo
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Productos monitoreados</div><div class="kpi-value">47</div><div class="kpi-delta delta-up">↑ 5 esta semana</div></div>
+      <div class="kpi-card"><div class="kpi-label">Posición promedio</div><div class="kpi-value">#2.3</div><div class="kpi-delta delta-up">↑ mejoraste 0.4</div></div>
+      <div class="kpi-card"><div class="kpi-label">Alertas activas</div><div class="kpi-value">3</div><div class="kpi-delta delta-down">↓ 1 urgente</div></div>
+      <div class="kpi-card"><div class="kpi-label">Listings optimizados</div><div class="kpi-value">18</div><div class="kpi-delta delta-neutral">29 pendientes</div></div>
+    </div>
+    <div class="section-title">Alertas recientes</div>
+    <div class="alerts-row">
+      <div class="alert-card urgent">
+        <div class="alert-top"><span>🔴</span><span class="alert-type alert-urgent">Urgente</span><span class="alert-time">hace 12 min</span></div>
+        <div class="alert-title">Perdiste la Buy Box — Silla Cesca</div>
+        <div class="alert-body">Competidor bajó a $18.100. Bajá a $18.900 para recuperar el #1 con margen del 28%.</div>
+        <button class="alert-action" onclick="nav('optimizer',document.querySelectorAll('.nav-item')[4])">Ver en Optimizer →</button>
+      </div>
+      <div class="alert-card warning">
+        <div class="alert-top"><span>🟡</span><span class="alert-type alert-warning">Oportunidad</span><span class="alert-time">hace 2 hs</span></div>
+        <div class="alert-title">Nicho emergente detectado</div>
+        <div class="alert-body">Lámparas mushroom inalámbricas — demanda +34% este mes. Solo 8 vendedores activos.</div>
+        <button class="alert-action" onclick="nav('radar',document.querySelectorAll('.nav-item')[2])">Ver en Radar →</button>
+      </div>
+      <div class="alert-card info">
+        <div class="alert-top"><span>🟣</span><span class="alert-type alert-info">Listings</span><span class="alert-time">hace 5 hs</span></div>
+        <div class="alert-title">3 listings con score bajo</div>
+        <div class="alert-body">Mesa Ratona Loop, Escritorio Orgánico y Sillón Denver tienen títulos que Meli penaliza.</div>
+        <button class="alert-action" onclick="nav('optimizer',document.querySelectorAll('.nav-item')[4])">Optimizar ahora →</button>
+      </div>
+    </div>
+    <div class="section-title">Tus productos top</div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Productos monitoreados</span><span class="panel-sub">47 publicaciones activas</span></div>
+        <div class="panel-body">
+          <div class="product-row header">
+            <div class="col-label">Producto</div><div class="col-label">Mi precio</div><div class="col-label">Posición</div><div class="col-label">Competidor</div><div class="col-label">Estado</div>
+          </div>
+          <div class="product-row"><div><div class="product-name">Silla Cesca Comedor</div><div class="product-cat">Sillas · Comedor</div></div><div><div class="price-cell">$19.700</div></div><div><span class="rank-badge rank-other">4°</span></div><div><div class="price-cell">$18.100</div><div class="price-comp">−$1.600</div></div><div><span class="status-pill pill-alert"><span class="status-dot status-alert"></span>Perdiste</span></div></div>
+          <div class="product-row"><div><div class="product-name">Mesa Ratona Loop</div><div class="product-cat">Mesas · Living</div></div><div><div class="price-cell">$52.000</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$55.500</div><div class="price-comp">+$3.500</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+          <div class="product-row"><div><div class="product-name">Lámpara Monolith Negro</div><div class="product-cat">Iluminación · Diseño</div></div><div><div class="price-cell">$99.990</div></div><div><span class="rank-badge rank-2">2°</span></div><div><div class="price-cell">$97.000</div><div class="price-comp">−$2.990</div></div><div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div></div>
+          <div class="product-row"><div><div class="product-name">Escritorio Orgánico</div><div class="product-cat">Escritorios · Home office</div></div><div><div class="price-cell">$142.000</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$149.000</div><div class="price-comp">+$7.000</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+          <div class="product-row"><div><div class="product-name">Sillón Denver Terciopelo</div><div class="product-cat">Sillones · Living</div></div><div><div class="price-cell">$87.500</div></div><div><span class="rank-badge rank-2">3°</span></div><div><div class="price-cell">$82.000</div><div class="price-comp">−$5.500</div></div><div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div></div>
+        </div>
+      </div>
+      <div class="chat-panel">
+        <div class="panel-header">
+          <div style="display:flex;align-items:center;gap:8px;flex:1"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)"></div><span class="panel-title">Copiloto</span></div>
+          <span class="panel-sub">Con contexto de tu tienda</span>
+        </div>
+        <div class="chat-messages" id="dash-messages">
+          <div class="msg msg-user"><span class="msg-sender">Vos</span><div class="msg-bubble">¿Qué hago con la Silla Cesca?</div></div>
+          <div class="msg msg-ai"><span class="msg-sender">MeliScope</span><div class="msg-bubble">Tu competidor <strong>Mueblerías del Sur</strong> bajó a <span class="hl">$18.100</span> hace 12 minutos.<br><br>Recomendación: bajá a <span class="hl">$18.900</span>. Recuperás el #1 con margen del <strong>28%</strong>. Si preferís no bajar, mejorar las fotos también sube el score del listing de 62 a ~78.</div></div>
+          <div class="msg msg-user"><span class="msg-sender">Vos</span><div class="msg-bubble">¿Vale la pena entrar con lámparas mushroom?</div></div>
+          <div class="msg msg-ai"><span class="msg-sender">MeliScope</span><div class="msg-bubble">Sí. Demanda subió <strong>34%</strong> este mes, solo <span class="hl">8 vendedores</span> activos con buena reputación. Precio promedio del top 3: <strong>$41.500</strong>. Margen estimado con tu estructura: ~32%.</div></div>
+          <div class="msg msg-ai" id="dash-typing" style="display:none"><span class="msg-sender">MeliScope</span><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="dash-input" placeholder="Preguntá sobre tu catálogo…"/>
+          <button class="send-btn" onclick="sendChat('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTIMIZER ══ -->
+  <div class="page" id="page-optimizer">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:4px">Seleccioná un producto para optimizar su listing con IA</div>
+      </div>
+      <span class="status-pill pill-warn" style="font-size:11px;padding:5px 12px">29 listings pendientes de optimización</span>
+    </div>
+    <div class="optimizer-grid">
+      <div class="listing-select">
+        <div class="listing-item selected" onclick="selectListing(this,'cesca')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="listing-item-name">Silla Cesca Comedor</div>
+              <div class="listing-item-meta">
+                <span style="font-size:10px;color:var(--text3)">Score actual:</span>
+                <div class="score-bar-wrap"><div class="score-bar score-low" style="width:38%"></div></div>
+                <span style="font-size:10px;font-family:var(--mono);color:var(--red)">38</span>
+              </div>
+            </div>
+            <span class="status-pill pill-alert" style="font-size:10px">Bajo</span>
+          </div>
+        </div>
+        <div class="listing-item" onclick="selectListing(this,'mesa')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="listing-item-name">Mesa Ratona Loop</div>
+              <div class="listing-item-meta">
+                <span style="font-size:10px;color:var(--text3)">Score actual:</span>
+                <div class="score-bar-wrap"><div class="score-bar score-low" style="width:52%"></div></div>
+                <span style="font-size:10px;font-family:var(--mono);color:var(--red)">52</span>
+              </div>
+            </div>
+            <span class="status-pill pill-alert" style="font-size:10px">Bajo</span>
+          </div>
+        </div>
+        <div class="listing-item" onclick="selectListing(this,'escritorio')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="listing-item-name">Escritorio Orgánico</div>
+              <div class="listing-item-meta">
+                <span style="font-size:10px;color:var(--text3)">Score actual:</span>
+                <div class="score-bar-wrap"><div class="score-bar score-mid" style="width:61%"></div></div>
+                <span style="font-size:10px;font-family:var(--mono);color:var(--amber)">61</span>
+              </div>
+            </div>
+            <span class="status-pill pill-warn" style="font-size:10px">Medio</span>
+          </div>
+        </div>
+        <div class="listing-item" onclick="selectListing(this,'lampara')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="listing-item-name">Lámpara Monolith Negro</div>
+              <div class="listing-item-meta">
+                <span style="font-size:10px;color:var(--text3)">Score actual:</span>
+                <div class="score-bar-wrap"><div class="score-bar score-high" style="width:84%"></div></div>
+                <span style="font-size:10px;font-family:var(--mono);color:var(--green)">84</span>
+              </div>
+            </div>
+            <span class="status-pill pill-ok" style="font-size:10px">Bueno</span>
+          </div>
+        </div>
+        <div class="listing-item" onclick="selectListing(this,'sillon')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="listing-item-name">Sillón Denver Terciopelo</div>
+              <div class="listing-item-meta">
+                <span style="font-size:10px;color:var(--text3)">Score actual:</span>
+                <div class="score-bar-wrap"><div class="score-bar score-low" style="width:45%"></div></div>
+                <span style="font-size:10px;font-family:var(--mono);color:var(--red)">45</span>
+              </div>
+            </div>
+            <span class="status-pill pill-alert" style="font-size:10px">Bajo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="optimizer-result" id="opt-result">
+        <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;margin-bottom:3px" id="opt-product-name">Silla Cesca Comedor</div>
+            <div style="font-size:11px;color:var(--text3)">Categoría: Sillas · Comedor · Polipropileno</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="text-align:center">
+              <div class="score-circle low"><span class="score-num low" id="opt-score-before">38</span><span class="score-lbl">actual</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <div style="text-align:center">
+              <div class="score-circle high"><span class="score-num high" id="opt-score-after">91</span><span class="score-lbl">estimado</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="opt-field">
+          <div class="opt-label">Título</div>
+          <div><span class="opt-badge badge-before">Actual</span></div>
+          <div class="opt-before" id="opt-title-before">Silla comedor polipropileno blanca moderna</div>
+          <div><span class="opt-badge badge-after">Optimizado por IA</span></div>
+          <div class="opt-after" id="opt-title-after">Silla Comedor Cesca Polipropileno Blanco — Diseño Moderno Apilable — Interior y Exterior</div>
+        </div>
+
+        <div class="opt-field">
+          <div class="opt-label">Por qué mejora</div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="opt-reasons">
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2)"><span style="color:var(--green);flex-shrink:0">✓</span>Agregamos "Apilable" — keyword que busca el 67% de los compradores de esta categoría</div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2)"><span style="color:var(--green);flex-shrink:0">✓</span>"Interior y Exterior" amplía el alcance sin perder relevancia</div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2)"><span style="color:var(--green);flex-shrink:0">✓</span>Nombre de marca "Cesca" como keyword diferenciadora</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Aplicar en Meli
+          </button>
+          <button class="btn btn-ghost">Copiar texto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RADAR DE NICHOS ══ -->
+  <div class="page" id="page-radar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--text3)">Categorías con demanda creciente y baja competencia — actualizadas esta semana</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost">Todas las categorías</button>
+        <button class="btn btn-primary" style="background:var(--violetBg);color:var(--violetL);border:1px solid var(--violetBorder)">Hogar y muebles ✓</button>
+      </div>
+    </div>
+    <div class="radar-grid">
+      <div class="niche-card hot">
+        <div class="niche-name">Lámparas mushroom inalámbricas</div>
+        <div class="niche-cat">Iluminación · Decoración · Living</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val up">+34%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val up">8</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$41.500</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val up">~32%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:82%"></div></div>
+        <div class="niche-rec">💡 <strong>Oportunidad para Alto Rancho:</strong> tu línea Monolith tiene el estilo correcto. Entrar ahora antes de que lleguen más vendedores.</div>
+      </div>
+      <div class="niche-card hot">
+        <div class="niche-name">Estantes flotantes modulares</div>
+        <div class="niche-cat">Organización · Living · Home office</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val up">+28%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val up">12</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$28.900</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val up">~28%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:71%"></div></div>
+        <div class="niche-rec">💡 <strong>Categoría en expansión:</strong> los compradores buscan sets completos. Oportunidad de bundle con tus mesas de living.</div>
+      </div>
+      <div class="niche-card">
+        <div class="niche-name">Sillas de jardín apilables</div>
+        <div class="niche-cat">Exterior · Jardín · Terraza</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val up">+19%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val warn">31</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$22.400</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val warn">~18%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:54%"></div></div>
+        <div class="niche-rec">⚠️ <strong>Competencia moderada:</strong> la demanda crece pero hay 31 vendedores. Entrar con diferenciación de diseño o calidad.</div>
+      </div>
+      <div class="niche-card">
+        <div class="niche-name">Escritorios con ruedas home office</div>
+        <div class="niche-cat">Home office · Escritorios · Mobiliario</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val up">+22%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val up">9</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$67.000</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val up">~34%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:63%"></div></div>
+        <div class="niche-rec">💡 <strong>Bien alineado con tu catálogo:</strong> tu Escritorio Orgánico ya está posicionado. Variante con ruedas puede capturar este segmento.</div>
+      </div>
+      <div class="niche-card">
+        <div class="niche-name">Veladores de diseño touch</div>
+        <div class="niche-cat">Iluminación · Dormitorio · Decoración</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val up">+15%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val up">7</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$34.500</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val up">~29%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:48%"></div></div>
+        <div class="niche-rec">💡 <strong>Nicho aún pequeño:</strong> demanda moderada pero poca competencia. Buen momento para establecer presencia con tu línea de iluminación.</div>
+      </div>
+      <div class="niche-card">
+        <div class="niche-name">Mesas plegables balcón</div>
+        <div class="niche-cat">Exterior · Balcón · Terraza</div>
+        <div class="niche-stats">
+          <div class="niche-stat"><div class="niche-stat-label">Demanda</div><div class="niche-stat-val warn">+9%</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Vendedores activos</div><div class="niche-stat-val warn">44</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Precio promedio</div><div class="niche-stat-val">$18.200</div></div>
+          <div class="niche-stat"><div class="niche-stat-label">Margen estimado</div><div class="niche-stat-val warn">~14%</div></div>
+        </div>
+        <div class="demand-bar"><div class="demand-fill" style="width:28%"></div></div>
+        <div class="niche-rec">⚠️ <strong>Mercado saturado:</strong> 44 vendedores activos y margen bajo. No se recomienda entrar salvo que tengas diferenciación muy clara.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COPILOTO FULL ══ -->
+  <div class="page" id="page-copiloto" style="flex:1;min-height:0">
+    <div class="copiloto-layout" style="flex:1;min-height:0">
+      <div class="context-panel">
+        <div class="context-title">Contexto activo</div>
+        <div class="context-item">
+          <div class="context-item-label">Tienda</div>
+          <div class="context-item-val">Alto Rancho</div>
+          <div class="context-item-sub">47 productos · Plan Growth</div>
+        </div>
+        <div class="context-item">
+          <div class="context-item-label">Alertas activas</div>
+          <div class="context-item-val" style="color:var(--red)">3 alertas</div>
+          <div class="context-item-sub">1 urgente · Silla Cesca</div>
+        </div>
+        <div class="context-item">
+          <div class="context-item-label">Posición promedio</div>
+          <div class="context-item-val">#2.3 en categoría</div>
+          <div class="context-item-sub">↑ mejoró 0.4 esta semana</div>
+        </div>
+        <div class="context-item">
+          <div class="context-item-label">Última actualización</div>
+          <div class="context-item-val">Hace 4 minutos</div>
+          <div class="context-item-sub">Meli API · Datos en vivo</div>
+        </div>
+        <div class="context-title" style="margin-top:4px">Preguntas sugeridas</div>
+        <div class="suggested-q" onclick="insertQ('¿Bajo el precio de la Silla Cesca ahora?')">¿Bajo el precio de la Silla Cesca?</div>
+        <div class="suggested-q" onclick="insertQ('¿Cuáles son mis productos con peor margen?')">¿Cuáles son mis productos con peor margen?</div>
+        <div class="suggested-q" onclick="insertQ('¿Vale la pena entrar con lámparas mushroom?')">¿Vale la pena entrar con lámparas mushroom?</div>
+        <div class="suggested-q" onclick="insertQ('¿Qué competidores son una amenaza real esta semana?')">¿Qué competidores amenazan esta semana?</div>
+        <div class="suggested-q" onclick="insertQ('¿Qué productos debería optimizar primero?')">¿Qué listings optimizo primero?</div>
+      </div>
+      <div class="chat-panel">
+        <div class="panel-header">
+          <div style="display:flex;align-items:center;gap:8px;flex:1"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)"></div><span class="panel-title">Copiloto MeliScope</span></div>
+          <span class="panel-sub">Datos actualizados · Contexto completo</span>
+        </div>
+        <div class="chat-messages" id="copi-messages">
+          <div class="msg msg-ai"><span class="msg-sender">MeliScope</span><div class="msg-bubble">Hola. Tengo todo el contexto de tu tienda cargado — 47 productos, precios actualizados hace 4 minutos y las alertas activas.<br><br>Hay <strong>3 situaciones</strong> que me llaman la atención hoy. ¿Querés que las revisemos, o preferís preguntarme algo específico?</div></div>
+          <div class="msg msg-ai" id="copi-typing" style="display:none"><span class="msg-sender">MeliScope</span><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="copi-input" placeholder="Preguntá cualquier cosa sobre tu negocio en Meli…"/>
+          <button class="send-btn" onclick="sendChat('copi')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRODUCTOS ══ -->
+  <div class="page" id="page-productos">
+    <div style="display:flex;gap:10px;align-items:center">
+      <input style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;color:var(--text);font-family:var(--font);outline:none" placeholder="Buscar producto…"/>
+      <button class="btn btn-ghost">Filtrar por estado</button>
+      <button class="btn btn-primary">+ Agregar producto</button>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Todos los productos</span><span class="panel-sub">47 publicaciones · sincronizadas hace 4 min</span></div>
+      <div class="panel-body">
+        <div class="product-row header">
+          <div class="col-label">Producto</div><div class="col-label">Mi precio</div><div class="col-label">Posición</div><div class="col-label">Competidor</div><div class="col-label">Estado</div>
+        </div>
+        <div class="product-row"><div><div class="product-name">Silla Cesca Comedor</div><div class="product-cat">Sillas · Comedor · Polipropileno</div></div><div><div class="price-cell">$19.700</div></div><div><span class="rank-badge rank-other">4°</span></div><div><div class="price-cell">$18.100</div><div class="price-comp">−$1.600 vs vos</div></div><div><span class="status-pill pill-alert"><span class="status-dot status-alert"></span>Perdiste Buy Box</span></div></div>
+        <div class="product-row"><div><div class="product-name">Mesa Ratona Loop</div><div class="product-cat">Mesas · Living · Madera</div></div><div><div class="price-cell">$52.000</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$55.500</div><div class="price-comp">+$3.500 vs vos</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+        <div class="product-row"><div><div class="product-name">Lámpara Monolith Negro</div><div class="product-cat">Iluminación · Diseño</div></div><div><div class="price-cell">$99.990</div></div><div><span class="rank-badge rank-2">2°</span></div><div><div class="price-cell">$97.000</div><div class="price-comp">−$2.990 vs vos</div></div><div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div></div>
+        <div class="product-row"><div><div class="product-name">Escritorio Orgánico</div><div class="product-cat">Escritorios · Home office</div></div><div><div class="price-cell">$142.000</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$149.000</div><div class="price-comp">+$7.000 vs vos</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+        <div class="product-row"><div><div class="product-name">Sillón Denver Terciopelo</div><div class="product-cat">Sillones · Living</div></div><div><div class="price-cell">$87.500</div></div><div><span class="rank-badge rank-2">3°</span></div><div><div class="price-cell">$82.000</div><div class="price-comp">−$5.500 vs vos</div></div><div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div></div>
+        <div class="product-row"><div><div class="product-name">Set Bazar Verano 3 pzas</div><div class="product-cat">Bazar · Cocina</div></div><div><div class="price-cell">$24.900</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$26.200</div><div class="price-comp">+$1.300 vs vos</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+        <div class="product-row"><div><div class="product-name">Mesa de Centro Nórdica</div><div class="product-cat">Mesas · Living · Minimalista</div></div><div><div class="price-cell">$38.500</div></div><div><span class="rank-badge rank-2">2°</span></div><div><div class="price-cell">$36.900</div><div class="price-comp">−$1.600 vs vos</div></div><div><span class="status-pill pill-warn"><span class="status-dot status-warn"></span>Atención</span></div></div>
+        <div class="product-row"><div><div class="product-name">Silla Tulip Blanca</div><div class="product-cat">Sillas · Comedor · Diseño</div></div><div><div class="price-cell">$28.900</div></div><div><span class="rank-badge rank-1">1°</span></div><div><div class="price-cell">$31.200</div><div class="price-comp">+$2.300 vs vos</div></div><div><span class="status-pill pill-ok"><span class="status-dot status-ok"></span>Liderás</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const pages = {
+  dashboard: { title:'Dashboard', cta:'Nuevo monitoreo' },
+  productos:  { title:'Mis productos', cta:'+ Agregar producto' },
+  radar:      { title:'Radar de nichos', cta:'Actualizar datos' },
+  optimizer:  { title:'Optimizer de listings', cta:'Optimizar todos' },
+  copiloto:   { title:'Copiloto', cta:'Nueva conversación' },
+};
+
+function nav(page, el, source) {
+  // Deactivate all nav items in sidebar and mobile nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Activate correct item in sidebar
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.onclick && n.onclick.toString().includes("'"+page+"'")) n.classList.add('active');
+  });
+  // Activate correct mobile nav item
+  const mobEl = document.getElementById('mob-'+page);
+  if (mobEl) mobEl.classList.add('active');
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('topbar-title').textContent = pages[page].title;
+  document.getElementById('topbar-cta').childNodes[2].textContent = ' '+pages[page].cta;
+  // Scroll to top on mobile
+  window.scrollTo(0,0);
+}
+
+// Optimizer
+const listings = {
+  cesca:     { name:'Silla Cesca Comedor', scoreBefore:38, scoreAfter:91,
+    before:'Silla comedor polipropileno blanca moderna',
+    after:'Silla Comedor Cesca Polipropileno Blanco — Diseño Moderno Apilable — Interior y Exterior',
+    reasons:['Agregamos "Apilable" — keyword que busca el 67% de los compradores','\"Interior y Exterior\" amplía el alcance sin perder relevancia','Nombre de marca "Cesca" como keyword diferenciadora'] },
+  mesa:      { name:'Mesa Ratona Loop', scoreBefore:52, scoreAfter:88,
+    before:'Mesa ratona living madera',
+    after:'Mesa Ratona Living Loop Madera Maciza 60cm — Diseño Escandinavo Minimalista',
+    reasons:['Agregamos "Madera Maciza" — buscada por el 72% de compradores de esta categoría','Dimensión "60cm" filtra búsquedas más precisas y calificadas','Estilo "Escandinavo Minimalista" alinea con las búsquedas de tendencia'] },
+  escritorio:{ name:'Escritorio Orgánico', scoreBefore:61, scoreAfter:85,
+    before:'Escritorio madera diseño moderno home office',
+    after:'Escritorio Home Office Madera Orgánica 140cm — Diseño Biofílico — Con Gestión de Cables',
+    reasons:['Dimensión "140cm" es la más buscada en la categoría','Agregamos "Gestión de Cables" — diferenciador que aparece en el 80% del top 10','Término "Biofílico" captura tendencia de búsqueda creciente +41%'] },
+  lampara:   { name:'Lámpara Monolith Negro', scoreBefore:84, scoreAfter:94,
+    before:'Lámpara de pie diseño negro moderno',
+    after:'Lámpara de Pie Monolith Negro Mate — Diseño Industrial Minimalista — Luz Cálida LED',
+    reasons:['Especificación "Negro Mate" más precisa que "negro"','Agregamos tipo de luz "Cálida LED" — criterio de compra relevante','Nombre de producto "Monolith" fortalece el reconocimiento de marca'] },
+  sillon:    { name:'Sillón Denver Terciopelo', scoreBefore:45, scoreAfter:89,
+    before:'Sillón terciopelo living moderno',
+    after:'Sillón Denver Terciopelo Premium Living — 3 Colores — Patas Madera Nórdico',
+    reasons:['Variantes "3 Colores" aumenta el alcance de búsqueda significativamente','"Patas Madera Nórdico" es keyword con alto CTR en esta categoría','Palabra "Premium" mejora el posicionamiento en búsquedas de mayor intención de compra'] },
+};
+
+function selectListing(el, key) {
+  document.querySelectorAll('.listing-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  const d = listings[key];
+  document.getElementById('opt-product-name').textContent = d.name;
+  document.getElementById('opt-score-before').textContent = d.scoreBefore;
+  document.getElementById('opt-score-after').textContent = d.scoreAfter;
+  document.getElementById('opt-title-before').textContent = d.before;
+  document.getElementById('opt-title-after').textContent = d.after;
+  const rc = document.getElementById('opt-reasons');
+  rc.innerHTML = d.reasons.map(r => `<div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2)"><span style="color:var(--green);flex-shrink:0">✓</span>${r}</div>`).join('');
+  const sb = document.querySelector('.score-circle.low, .score-circle.mid, .score-circle.high');
+  const sa = document.querySelectorAll('.score-circle')[1];
+  const sc = d.scoreBefore < 50 ? 'low' : d.scoreBefore < 70 ? 'mid' : 'high';
+  document.querySelectorAll('.score-circle')[0].className = `score-circle ${sc}`;
+  document.getElementById('opt-score-before').className = `score-num ${sc}`;
+}
+
+// Chat
+const chatResponses = {
+  dash: {
+    default:'Analizando los datos de tu catálogo en Meli...',
+    cesca:'Basándome en los datos de hoy: bajá la Silla Cesca a <span class="hl">$18.900</span>. Recuperás el #1 manteniendo un margen del <strong>28%</strong>. Tu competidor Mueblerías del Sur está a $18.100 pero tiene reputación más baja que vos — podés recuperar posición sin llegar a su precio.',
+    competidor:'Detecté <strong>3 competidores nuevos</strong> esta semana. El más relevante es <span class="hl">HomeDesign ARG</span> — entró con precios 8% más bajos en sillas, pero tiene reputación nueva. No es una amenaza urgente todavía.',
+    listing:'Tu Mesa Ratona Loop tiene score <span class="hl">52/100</span>. Le falta la keyword "madera maciza" que aparece en el 80% de los top resultados. ¿Querés que genere un título optimizado?',
+    margen:'Tus productos con menor margen son: Sillón Denver (est. 19%) y Silla Cesca (est. 21% con el precio actual). El Escritorio Orgánico tiene el mejor margen estimado con <strong>~34%</strong>.',
+  },
+  copi: {
+    default:'Consultando los datos actualizados de tu tienda...',
+    cesca:'Bajá la Silla Cesca a <span class="hl">$18.900</span>. Recuperás el #1 con margen del <strong>28%</strong>. Tu competidor está a $18.100 pero tiene reputación más baja — no necesitás llegar a su precio para superar su score en el algoritmo de Meli.',
+    margen:'Los 3 productos con menor margen estimado son: <strong>Sillón Denver</strong> (~19%), <strong>Silla Cesca</strong> (~21%), y <strong>Mesa de Centro Nórdica</strong> (~22%). El Escritorio Orgánico lidera con ~34%.',
+    mushroom:'Sí, conviene entrar ahora. Demanda +34% este mes, solo 8 vendedores activos con buena reputación. El precio promedio del top 3 es $41.500 y el margen estimado con tu estructura de costos es ~32%. Cada semana que pasa hay más chances de que entren competidores.',
+    competidor:'Esta semana tus mayores amenazas son: <span class="hl">Mueblerías del Sur</span> (bajó el precio de sillas comedor), <span class="hl">HomeDesign ARG</span> (nuevo, precios agresivos en living) y <span class="hl">LuzDeco</span> (sumó 4 publicaciones nuevas en iluminación).',
+    optimizer:'Ordenado por impacto: 1. <strong>Silla Cesca</strong> (score 38 → 91 estimado), 2. <strong>Sillón Denver</strong> (45 → 89), 3. <strong>Mesa Ratona Loop</strong> (52 → 88). ¿Empezamos por la Cesca?',
+  }
+};
+
+function getReply(ctx, msg) {
+  const l = msg.toLowerCase();
+  const r = chatResponses[ctx];
+  if (l.includes('cesca') || l.includes('precio') || l.includes('bajar')) return r.cesca || r.default;
+  if (l.includes('margen') || l.includes('rentab')) return r.margen || r.default;
+  if (l.includes('mushroom') || l.includes('lampara') || l.includes('nicho')) return r.mushroom || r.default;
+  if (l.includes('competid')) return r.competidor || r.default;
+  if (l.includes('optimiz') || l.includes('listing') || l.includes('primero')) return r.optimizer || r.default;
+  return r.default;
+}
+
+function sendChat(ctx) {
+  const input = document.getElementById(ctx+'-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById(ctx+'-messages');
+  const typing = document.getElementById(ctx+'-typing');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg msg-user';
+  userDiv.innerHTML = `<span class="msg-sender">Vos</span><div class="msg-bubble">${msg}</div>`;
+  msgs.insertBefore(userDiv, typing);
+  input.value = '';
+  typing.style.display = 'flex';
+  msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => {
+    typing.style.display = 'none';
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'msg msg-ai';
+    aiDiv.innerHTML = `<span class="msg-sender">MeliScope</span><div class="msg-bubble">${getReply(ctx, msg)}</div>`;
+    msgs.insertBefore(aiDiv, typing);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 1400);
+}
+
+function insertQ(q) {
+  document.getElementById('copi-input').value = q;
+  document.getElementById('copi-input').focus();
+}
+
+document.getElementById('dash-input').addEventListener('keydown', e => { if(e.key==='Enter') sendChat('dash'); });
+document.getElementById('copi-input').addEventListener('keydown', e => { if(e.key==='Enter') sendChat('copi'); });
+</script>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mob-nav-item active" id="mob-dashboard" onclick="nav('dashboard',this,'mob')">
+      <div class="mob-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      Inicio
+    </button>
+    <button class="mob-nav-item" id="mob-productos" onclick="nav('productos',this,'mob')">
+      <div class="mob-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+      Productos
+    </button>
+    <button class="mob-nav-item" id="mob-radar" onclick="nav('radar',this,'mob')">
+      <div class="mob-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      Radar
+    </button>
+    <button class="mob-nav-item" id="mob-optimizer" onclick="nav('optimizer',this,'mob')">
+      <div class="mob-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      Optimizer
+    </button>
+    <button class="mob-nav-item" id="mob-copiloto" onclick="nav('copiloto',this,'mob')">
+      <div class="mob-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="mob-badge">3</span>
+      </div>
+      Copiloto
+    </button>
+  </div>
+</nav>
+
+</body>
+</html>
